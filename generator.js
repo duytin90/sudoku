@@ -1,55 +1,66 @@
-var sudokuArray = fillSudoku(new Array(81));
-while (sudokuArray == -1){
-	sudokuArray = fillSudoku(new Array(81));
+var start = new Date();
+var sudokuArray = fillSudoku();
+var count = 1;
+while (!sudokuArray){
+	sudokuArray = fillSudoku();
+	count++;
 }
+var end = new Date();
+console.log("It has taken " + ((end - start)/1000) + " seconds and " + count + " tries to generate the following puzzle: \n");
 printSudoku(sudokuArray);
 
-function fillSudoku(sudokuArray) {
-	sudokuArray[0] = getRandomInt(1,9);
-	for (var i = 1; i < sudokuArray.length; i++){
-		var nextNumber = getSudokuInt(getRow(i, sudokuArray), getSquare(i, sudokuArray), getColumn(i, sudokuArray));
-		if (nextNumber !== -1) {
-			sudokuArray[i] = nextNumber;
+function fillSudoku() {
+	var sudokuArray = [getRandomInt(1,9)];
+	for (var i = 1; i < 81; i++){
+		var rowArray = getRow(i, sudokuArray), squareArray = getSquare(i, sudokuArray),
+			columnArray = getColumn(i, sudokuArray);
+		var candidate;
+		if (i % 9 === 8){
+			candidate = 45 - (sudokuArray[i-1] + sudokuArray[i-2] + sudokuArray[i-3] + sudokuArray[i-4]
+				+ sudokuArray[i-5] + sudokuArray[i-6] + sudokuArray[i-7] + sudokuArray[i-8]);
+			if (!checkCandidate(rowArray, squareArray, columnArray, candidate)){
+				return undefined;
+			}
+		}
+		else if( i > 71 && i < 81) {
+			candidate = 45 - (sudokuArray[i-9] + sudokuArray[i-18] + sudokuArray[i-27] + sudokuArray[i-36]
+				+ sudokuArray[i-45] + sudokuArray[i-54] + sudokuArray[i-63] + sudokuArray[i-72]);
+			if (!checkCandidate(rowArray, squareArray, columnArray, candidate)){
+				return undefined;
+			}
 		}
 		else {
-			return -1;
+			candidate = getRandomInt(1,9);
+			var usedCandidates = [candidate];
+			while (!checkCandidate(rowArray, squareArray, columnArray, candidate)){
+				candidate = getRandomInt(1,9);
+				if (usedCandidates.indexOf(candidate) === -1) {
+					usedCandidates.push(candidate);
+				}
+				if(usedCandidates.length > 8) {
+					return undefined;
+				}
+			}
 		}
+
+		sudokuArray[i] = candidate;
 	}
 
 	return sudokuArray;
 }
 
-function getSudokuInt(rowArray, squareArray, columnArray) {
-	var candidate = getRandomInt(1,9);
-	var usedCandidates = [candidate];
-	var restart = false;
-	while (checkCandidate(rowArray, squareArray, columnArray, candidate) && !restart){
-		candidate = getRandomInt(1,9);
-
-		if (usedCandidates.indexOf(candidate) == -1) {
-			usedCandidates.push(candidate);
-		}
-		if(usedCandidates.length == 9) {
-			restart = true;
-			return -1;
-		}
-	}
-	return candidate;
-}
-
-
 function checkCandidate(rowArray, squareArray, columnArray, candidate){
 	if (rowArray.indexOf(candidate) !== -1) {
-		return true;
+		return false;
 	}
 	else if (squareArray.indexOf(candidate) !== -1) {
-		return true;
+		return false;
 	}
 	else if (columnArray.indexOf(candidate) !== -1) {
-		return true;
+		return false;
 	}
 	else {
-		return false;
+		return true;
 	}
 }
 function getRandomInt(min, max) {

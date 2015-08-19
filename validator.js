@@ -1,73 +1,11 @@
-function generateSudoku() {
-	var start = new Date();
-	var sudokuArray = fillSudoku();
-	var count = 1;
-	while (!sudokuArray){
-		sudokuArray = fillSudoku();
-		count++;
-	}
-	var end = new Date();
-	console.log("It has taken " + ((end - start)/1000) + " seconds and " + count + " tries to generate the puzzle.\n");
-	return sudokuArray;
-}
-
-function fillSudoku() {
-	var sudokuArray = [getRandomInt(1,9)];
-	for (var i = 1; i < 81; i++){
-		var rowArray = getRow(i, sudokuArray), squareArray = getSquare(i, sudokuArray),
-			columnArray = getColumn(i, sudokuArray);
-		var candidate;
-		if (i % 9 === 8){
-			candidate = 45 - (sudokuArray[i-1] + sudokuArray[i-2] + sudokuArray[i-3] + sudokuArray[i-4]
-				+ sudokuArray[i-5] + sudokuArray[i-6] + sudokuArray[i-7] + sudokuArray[i-8]);
-			if (!checkCandidate(rowArray, squareArray, columnArray, candidate)){
-				return undefined;
-			}
+function validateSudokuArray(sudokuArray) {
+	for (var i = 1; i < sudokuArray.length; i++) {
+		if (!checkValue(getRow(i, sudokuArray), getSquare(i, sudokuArray), getColumn(i, sudokuArray), sudokuArray[i])) {
+			console.log("Failed at position " + i + "\n");
+			return false;
 		}
-		else if( i > 71 && i < 81) {
-			candidate = 45 - (sudokuArray[i-9] + sudokuArray[i-18] + sudokuArray[i-27] + sudokuArray[i-36]
-				+ sudokuArray[i-45] + sudokuArray[i-54] + sudokuArray[i-63] + sudokuArray[i-72]);
-			if (!checkCandidate(rowArray, squareArray, columnArray, candidate)){
-				return undefined;
-			}
-		}
-		else {
-			candidate = getRandomInt(1,9);
-			var usedCandidates = [candidate];
-			while (!checkCandidate(rowArray, squareArray, columnArray, candidate)){
-				candidate = getRandomInt(1,9);
-				if (usedCandidates.indexOf(candidate) === -1) {
-					usedCandidates.push(candidate);
-				}
-				if(usedCandidates.length > 8) {
-					return undefined;
-				}
-			}
-		}
-
-		sudokuArray[i] = candidate;
 	}
-
-	return sudokuArray;
-}
-
-function checkCandidate(rowArray, squareArray, columnArray, candidate){
-	if (rowArray.indexOf(candidate) !== -1) {
-		return false;
-	}
-	else if (squareArray.indexOf(candidate) !== -1) {
-		return false;
-	}
-	else if (columnArray.indexOf(candidate) !== -1) {
-		return false;
-	}
-	else {
-		return true;
-	}
-}
-
-function getRandomInt(min, max) {
-	return Math.floor(Math.random() * (max - min + 1)) + min;
+	return true;
 }
 
 function getRow(currentPosition, sudokuArray) {
@@ -220,4 +158,25 @@ function getSquare (currentPosition, sudokuArray) {
 	return square;
 }
 
-module.exports = generateSudoku;
+function checkValue(rowArray, squareArray, columnArray, value){
+	var rowPosition = rowArray.indexOf(value);
+	var squarePosition = squareArray.indexOf(value);
+	var columnPosition = columnArray.indexOf(value);
+	if (rowArray.indexOf(value, rowPosition + 1) !== -1) {
+		console.log("Value " + value + " already exists in the row.\n" );
+		return false;
+	}
+	else if (squareArray.indexOf(value, squarePosition + 1) !== -1) {
+		console.log("Value " + value + " already exists in the square.\n");
+		return false;
+	}
+	else if (columnArray.indexOf(value, columnPosition + 1) !== -1) {
+		console.log("Value " + value + " already exists in the column.\n");
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+
+module.exports = validateSudokuArray;
